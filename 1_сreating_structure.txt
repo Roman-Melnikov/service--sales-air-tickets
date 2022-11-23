@@ -1,0 +1,131 @@
+CREATE TABLE airports (
+	id SERIAL PRIMARY KEY,
+	airport_name VARCHAR(50) NOT NULL UNIQUE,
+	city_id INT 
+);
+
+CREATE TABLE airlines (
+	id SERIAL PRIMARY KEY,
+	airline_name VARCHAR(50) NOT NULL UNIQUE,
+	alphanumeric_code VARCHAR(10) NOT NULL UNIQUE
+);
+
+CREATE TABLE flights (
+	id SERIAL PRIMARY KEY,
+	flight_number SMALLINT NOT NULL UNIQUE,
+	from_city_id INT,
+	to_city_id INT
+);
+
+CREATE TABLE cities (
+	id SERIAL PRIMARY KEY,
+	city_name VARCHAR(50) NOT NULL 
+);
+
+CREATE TABLE users (
+	id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE aircrafts (
+	id SERIAL PRIMARY KEY,
+	registration_mark VARCHAR(50) NOT NULL,
+	aircraft_type_id INT,
+	airline_id INT
+);
+
+CREATE TABLE aircraft_type (
+	id SERIAL PRIMARY KEY,
+	aircraft_name VARCHAR(50) NOT NULL,
+	number_seats SMALLINT NOT NULL
+);
+
+CREATE TYPE days_of_week_type AS (
+	monday BOOLEAN,
+	tuesday BOOLEAN,
+	wednesday BOOLEAN,
+	thursday BOOLEAN,
+	friday BOOLEAN,
+	saturday BOOLEAN,
+	sunday BOOLEAN
+);
+
+CREATE TABLE schedule (
+	id SERIAL PRIMARY KEY,
+	flight_id INT,
+	start_execution_period DATE,
+	end_execution_period DATE,
+	execution_by_day_of_week DAYS_OF_WEEK_TYPE,
+	exception_days DATE[],
+	cancellation_days DATE[],
+	departure_time_msk TIME
+);
+
+CREATE TABLE schedule_y2022_m10 (
+	id SERIAL PRIMARY KEY,
+	CHECK (
+		start_execution_period >= DATE '2022-10-01' AND end_execution_period < DATE '2022-11-01'
+	)
+) INHERITS (schedule);
+	
+CREATE TABLE schedule_y2022_m11 (
+	id SERIAL PRIMARY KEY,
+	CHECK (
+		start_execution_period >= DATE '2022-11-01' AND end_execution_period < DATE '2022-12-01'
+	)
+) INHERITS (schedule);
+	
+CREATE TABLE tickets (
+	id SERIAL PRIMARY KEY,
+	user_id INT,
+	flight_id INT,
+	seat_number SMALLINT,
+	departure_date DATE,
+	service_class_id SMALLINT
+);
+
+CREATE TABLE tickets_y2022_m10 (
+	id SERIAL PRIMARY KEY,
+	CHECK (
+		departure_date >= DATE '2022-10-01' AND departure_date < DATE '2022-11-01'
+	)
+) INHERITS (tickets);
+
+CREATE TABLE tickets_y2022_m11 (
+	id SERIAL PRIMARY KEY,
+	CHECK (
+		departure_date >= DATE '2022-11-01' AND departure_date < DATE '2022-12-01'
+	)
+) INHERITS (tickets);
+
+CREATE TABLE tariffs (
+	id SERIAL PRIMARY KEY,
+	first_class_price MONEY,
+	business_class_price MONEY NOT NULL,
+	economy_class_price MONEY NOT NULL,
+	created_at DATE NOT NULL,
+	finished_at DATE
+);
+
+CREATE TABLE service_classes (
+	id SERIAL PRIMARY KEY,
+	class_name VARCHAR(8) NOT NULL UNIQUE
+);
+
+CREATE TABLE airlines_airports (
+	airline_id INT,
+	airport_id INT,
+	contract_number INT NOT NULL UNIQUE	
+);
+
+CREATE TABLE aircrafts_flights (
+	aircraft_id INT,
+	flight_id INT
+);
+
+CREATE TABLE flights_tariffs (
+	flight_id INT,
+	tariff_id INT
+);
+
