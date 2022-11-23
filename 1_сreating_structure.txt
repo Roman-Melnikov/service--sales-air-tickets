@@ -30,7 +30,7 @@ CREATE TABLE users (
 
 CREATE TABLE aircrafts (
 	id SERIAL PRIMARY KEY,
-	registration_mark VARCHAR(50) NOT NULL,
+	registration_mark VARCHAR(8) NOT NULL,
 	aircraft_type_id INT,
 	airline_id INT
 );
