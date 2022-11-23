@@ -116,16 +116,18 @@ CREATE TABLE service_classes (
 CREATE TABLE airlines_airports (
 	airline_id INT,
 	airport_id INT,
-	contract_number INT NOT NULL UNIQUE	
+	contract_number INT NOT NULL UNIQUE,
+	PRIMARY KEY (airline_id, airport_id)
 );
 
 CREATE TABLE aircrafts_flights (
 	aircraft_id INT,
-	flight_id INT
+	flight_id INT,
+	PRIMARY KEY (aircraft_id, flight_id)
 );
 
 CREATE TABLE flights_tariffs (
 	flight_id INT,
-	tariff_id INT
+	tariff_id INT,
+	PRIMARY KEY (flight_id, tariff_id)
 );
-
