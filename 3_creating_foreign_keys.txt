@@ -1,114 +1,137 @@
 ALTER TABLE flights
 	ADD CONSTRAINT flights_from_city_id_fk
 	FOREIGN KEY (from_city_id)
-	REFERENCES cities (id);
+	REFERENCES cities (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE flights
 	ADD CONSTRAINT flights_to_city_id_fk
 	FOREIGN KEY (to_city_id)
-	REFERENCES cities (id);
+	REFERENCES cities (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE aircrafts
 	ADD CONSTRAINT aircrafts_aircraft_type_id_fk
 	FOREIGN KEY (aircraft_type_id)
-	REFERENCES aircraft_type (id);
+	REFERENCES aircraft_type (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE aircrafts
 	ADD CONSTRAINT aircrafts_airline_id_fk
 	FOREIGN KEY (airline_id)
-	REFERENCES airlines (id);
+	REFERENCES airlines (id)
+		ON DELETE SET NULL;
 	
 ALTER TABLE schedule
 	ADD CONSTRAINT schedule_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE schedule_y2022_m10
 	ADD CONSTRAINT schedule_y2022_m10_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE schedule_y2022_m11
 	ADD CONSTRAINT schedule_y2022_m11_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE airports
 	ADD CONSTRAINT airports_city_id_fk
 	FOREIGN KEY (city_id)
-	REFERENCES cities (id);
+	REFERENCES cities (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE tickets
 	ADD CONSTRAINT tickets_user_id_fk
 	FOREIGN KEY (user_id)
-	REFERENCES users (id);
+	REFERENCES users (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE tickets
 	ADD CONSTRAINT tickets_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE tickets
 	ADD CONSTRAINT tickets_service_class_id_fk
 	FOREIGN KEY (service_class_id)
-	REFERENCES service_classes (id);
+	REFERENCES service_classes (id)
+		ON DELETE SET NULL;
 	
 ALTER TABLE tickets_y2022_m10
 	ADD CONSTRAINT tickets_y2022_m10_user_id_fk
 	FOREIGN KEY (user_id)
-	REFERENCES users (id);
+	REFERENCES users (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE tickets_y2022_m10
 	ADD CONSTRAINT tickets_y2022_m10_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE tickets_y2022_m10
 	ADD CONSTRAINT tickets_y2022_m10_service_class_id_fk
 	FOREIGN KEY (service_class_id)
-	REFERENCES service_classes (id);
+	REFERENCES service_classes (id)
+		ON DELETE SET NULL;
 	
 ALTER TABLE tickets_y2022_m11
 	ADD CONSTRAINT tickets_y2022_m11_user_id_fk
 	FOREIGN KEY (user_id)
-	REFERENCES users (id);
+	REFERENCES users (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE tickets_y2022_m11
 	ADD CONSTRAINT tickets_y2022_m11_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE tickets_y2022_m11
 	ADD CONSTRAINT tickets_y2022_m11_service_class_id_fk
 	FOREIGN KEY (service_class_id)
-	REFERENCES service_classes (id);
+	REFERENCES service_classes (id)
+		ON DELETE SET NULL;
 	
 ALTER TABLE airlines_airports
 	ADD CONSTRAINT airlines_airports_airline_id_fk
 	FOREIGN KEY (airline_id)
-	REFERENCES airlines (id);
+	REFERENCES airlines (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE airlines_airports
 	ADD CONSTRAINT airlines_airports_airport_id_fk
 	FOREIGN KEY (airport_id)
-	REFERENCES airports (id);
+	REFERENCES airports (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE aircrafts_flights
 	ADD CONSTRAINT aircrafts_flights_aircraft_id_fk
 	FOREIGN KEY (aircraft_id)
-	REFERENCES aircrafts (id);
+	REFERENCES aircrafts (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE aircrafts_flights
 	ADD CONSTRAINT aircrafts_flights_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE flights_tariffs
 	ADD CONSTRAINT flights_tariffs_flight_id_fk
 	FOREIGN KEY (flight_id)
-	REFERENCES flights (id);
+	REFERENCES flights (id)
+		ON DELETE CASCADE;
 	
 ALTER TABLE flights_tariffs
 	ADD CONSTRAINT flights_tariffs_tariff_id_fk
 	FOREIGN KEY (tariff_id)
-	REFERENCES tariffs (id);
+	REFERENCES tariffs (id)
+		ON DELETE CASCADE;
