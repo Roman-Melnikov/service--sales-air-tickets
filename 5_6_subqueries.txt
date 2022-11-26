@@ -1,0 +1,92 @@
+1. Найти 10 самых популярных, по количеству проданных билетов, городов назначения в октябре 2022г.
+   В отчет вывести название города, количество проданных билетов.
+
+//с использованием объединения JOIN	
+SELECT DISTINCT
+	city_name,
+	COUNT(*) OVER w_to_city_id AS number_tickets_in_october
+	FROM tickets
+		JOIN flights
+			ON  tickets.flight_id = flights.id 
+			    AND
+			    departure_date BETWEEN '2022-10-01' AND '2022-10-31'
+		JOIN cities
+			ON to_city_id = cities.id
+	WINDOW w_to_city_id AS (PARTITION BY to_city_id)
+	ORDER BY number_tickets_in_october DESC, city_name ASC
+	LIMIT 10;
+	
+//с использованием подзапросов
+SELECT DISTINCT
+	(SELECT city_name FROM cities WHERE cities.id = to_city_id) AS city_name,
+	COUNT(*) OVER (PARTITION BY to_city_id) AS number_tickets_in_october
+	FROM
+		(SELECT
+			(SELECT to_city_id FROM flights WHERE flight_id = flights.id) AS to_city_id
+			FROM 
+				(SELECT 
+					flight_id 
+					FROM tickets
+					WHERE departure_date BETWEEN '2022-10-01' AND '2022-10-31') AS tickets_y2022_m10)
+		  AS to_city_id
+	ORDER BY number_tickets_in_october DESC, city_name ASC
+	LIMIT 10;
+
+2. Найти 3 авиакомпании продавших наибольшее количество билетов в ноябре 2022г.
+   В отчет вывести id авиакомпании, название авиакомпании, количество проданных билетов.
+
+
+//с использованием объединения JOIN
+
+/*В таблице связей aircrafts_flights у рейса(flight_id) могут быть разные воздушные суда(aircraft_id).
+/*При этом авиакомпания , владелец этих воздушных судов, одна.
+/*В связи с этим решил сделать табличное выражение, в котором рейсы(flight_id) дублироваться не будут.  
+WITH aircrafts_flights_with_unique_flights AS (
+	SELECT DISTINCT
+		flight_id,
+		FIRST_VALUE(aircraft_id) OVER w_flight_id AS aircraft_id
+		FROM aircrafts_flights
+		WINDOW w_flight_id AS (PARTITION BY flight_id ORDER BY aircraft_id)
+)
+SELECT DISTINCT
+	airline_id,
+	airline_name,
+	COUNT(*) OVER w_airline_id AS number_tickets_in_november
+	FROM tickets
+		JOIN aircrafts_flights_with_unique_flights
+			ON tickets.flight_id = aircrafts_flights_with_unique_flights.flight_id
+			   AND
+			   departure_date BETWEEN '2022-11-01' AND '2022-11-30'
+		JOIN aircrafts
+			ON aircrafts_flights_with_unique_flights.aircraft_id = aircrafts.id
+		JOIN airlines
+			ON aircrafts.airline_id = airlines.id
+	WINDOW w_airline_id AS (PARTITION BY airline_id)
+	ORDER BY number_tickets_in_november DESC, airline_name ASC
+	LIMIT 3;
+
+//с использованием подзапросов
+SELECT DISTINCT
+	airline_id,
+	(SELECT airline_name FROM airlines WHERE airlines.id = airline_id) AS airline_name,
+	COUNT(*) OVER (PARTITION BY airline_id) AS number_tickets_in_november
+	FROM
+		(SELECT
+			(SELECT airline_id FROM aircrafts WHERE aircrafts.id = aircraft_id) AS airline_id
+			FROM
+				(SELECT
+					(SELECT aircraft_id 
+						FROM aircrafts_flights 
+						WHERE aircrafts_flights.flight_id = tickets_y2022_m11.flight_id
+					 	ORDER BY aircraft_id
+						LIMIT 1) AS aircraft_id
+					FROM
+						(SELECT 
+							flight_id 
+							FROM tickets 
+							WHERE departure_date BETWEEN '2022-11-01' AND '2022-11-30') AS tickets_y2022_m11)
+					AS aircraft_id) AS airline_id
+	WHERE airline_id is NOT NULL
+	ORDER BY number_tickets_in_november DESC, airline_name ASC
+	LIMIT 3;  
+
