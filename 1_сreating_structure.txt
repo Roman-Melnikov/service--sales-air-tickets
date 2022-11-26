@@ -99,13 +99,13 @@ CREATE TABLE tickets_y2022_m11 (
 	)
 ) INHERITS (tickets);
 
-CREATE TABLE tariffs (
+CREATE TABLE current_tariffs (
 	id SERIAL PRIMARY KEY,
+	flight_id INT,
 	first_class_price MONEY,
 	business_class_price MONEY NOT NULL,
 	economy_class_price MONEY NOT NULL,
-	created_at DATE NOT NULL,
-	finished_at DATE
+	created_at DATE NOT NULL
 );
 
 CREATE TABLE service_classes (
@@ -124,10 +124,4 @@ CREATE TABLE aircrafts_flights (
 	aircraft_id INT,
 	flight_id INT,
 	PRIMARY KEY (aircraft_id, flight_id)
-);
-
-CREATE TABLE flights_tariffs (
-	flight_id INT,
-	tariff_id INT,
-	PRIMARY KEY (flight_id, tariff_id)
 );
