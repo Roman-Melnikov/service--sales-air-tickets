@@ -1,0 +1,26 @@
+При добавлении нового usera триггер проверяет , есть ли уже такой же user
+
+CREATE OR REPLACE FUNCTION insert_users_first_name_last_name_trigger()
+RETURNS TRIGGER AS
+$$
+DECLARE users_row RECORD;
+BEGIN
+	FOR users_row IN
+		SELECT * FROM users
+	LOOP
+		IF users_row.first_name = NEW.first_name
+		   AND
+		   users_row.last_name = NEW.last_name 
+	    THEN
+	       RAISE EXCEPTION
+		   	'user with such first_name: % and last_name: % already exists', NEW.first_name, NEW.last_name;
+	    END IF;
+	END LOOP;
+RETURN NEW;
+END;
+$$
+LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE TRIGGER checking_existence_user BEFORE INSERT ON users
+	FOR EACH ROW
+	EXECUTE FUNCTION insert_users_first_name_last_name_trigger();
