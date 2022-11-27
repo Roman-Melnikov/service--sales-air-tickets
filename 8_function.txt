@@ -1,0 +1,48 @@
+Создать функцию, которая принимает id рейса и возвращает количество его выполненных полетов в октябре 2022г.
+
+CREATE OR REPLACE FUNCTION number_flights_y2022_m10 (fligh_id INTEGER) 
+RETURNS INTEGER AS
+$$
+DECLARE 
+	schedule_y2022_m10_row RECORD;
+ 	number_flights SMALLINT := 0;
+ 	day_of_week SMALLINT;
+	start_day SMALLINT;
+	end_day SMALLINT;
+	is_execution BOOLEAN;
+	some_date DATE;
+BEGIN	
+	FOR schedule_y2022_m10_row IN
+		SELECT * FROM schedule_y2022_m10 WHERE schedule_y2022_m10.flight_id = fligh_id
+	LOOP
+		start_day := EXTRACT(DAY FROM schedule_y2022_m10_row.start_execution_period);
+		end_day := EXTRACT(DAY FROM schedule_y2022_m10_row.end_execution_period);
+		FOR i IN start_day..end_day LOOP
+			some_date := '2022-10-' || i;
+			CONTINUE WHEN some_date = any(schedule_y2022_m10_row.exception_days)
+						  OR some_date = any(schedule_y2022_m10_row.cancellation_days);
+			day_of_week := EXTRACT(DOW FROM some_date);
+			CASE WHEN day_of_week = 1 
+					THEN is_execution := (schedule_y2022_m10_row.execution_by_day_of_week).monday;
+				 WHEN day_of_week = 2 
+					THEN is_execution := (schedule_y2022_m10_row.execution_by_day_of_week).tuesday;
+				 WHEN day_of_week = 3 
+					THEN is_execution := (schedule_y2022_m10_row.execution_by_day_of_week).wednesday;
+				 WHEN day_of_week = 4 
+					THEN is_execution := (schedule_y2022_m10_row.execution_by_day_of_week).thursday;
+				 WHEN day_of_week = 5 
+					THEN is_execution := (schedule_y2022_m10_row.execution_by_day_of_week).friday;
+				 WHEN day_of_week = 6 
+					THEN is_execution := (schedule_y2022_m10_row.execution_by_day_of_week).saturday;
+				 WHEN day_of_week = 0 
+					THEN is_execution := (schedule_y2022_m10_row.execution_by_day_of_week).sunday;
+			END CASE;
+			IF is_execution THEN
+				number_flights := number_flights + 1;
+			END IF;
+		END LOOP;	
+	END LOOP;
+	RETURN number_flights;
+END;	
+$$
+LANGUAGE PLPGSQL;
