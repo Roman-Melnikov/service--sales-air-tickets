@@ -1,0 +1,81 @@
+service_sales_air_tickets=> EXPLAIN ANALYZE SELECT DISTINCT
+        city_name,
+        COUNT(*) OVER w_to_city_id AS number_tickets_in_october
+        FROM tickets
+                JOIN flights
+                        ON  tickets.flight_id = flights.id 
+                            AND
+                            departure_date BETWEEN '2022-10-01' AND '2022-10-31'
+                JOIN cities
+                        ON to_city_id = cities.id
+        WINDOW w_to_city_id AS (PARTITION BY to_city_id)
+        ORDER BY number_tickets_in_october DESC, city_name ASC
+        LIMIT 10;
+                                                                               QUERY PLAN                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=27.56..27.59 rows=10 width=21) (actual time=1.675..1.682 rows=10 loops=1)
+   ->  Sort  (cost=27.56..27.80 rows=96 width=21) (actual time=1.674..1.679 rows=10 loops=1)
+         Sort Key: (count(*) OVER (?)) DESC, cities.city_name
+         Sort Method: top-N heapsort  Memory: 26kB
+         ->  HashAggregate  (cost=24.53..25.49 rows=96 width=21) (actual time=1.560..1.583 rows=61 loops=1)
+               Group Key: count(*) OVER (?), cities.city_name
+               Batches: 1  Memory Usage: 32kB
+               ->  WindowAgg  (cost=21.15..23.78 rows=150 width=21) (actual time=0.888..1.290 rows=300 loops=1)
+                     ->  Sort  (cost=21.15..21.53 rows=150 width=13) (actual time=0.877..0.913 rows=300 loops=1)
+                           Sort Key: flights.to_city_id
+                           Sort Method: quicksort  Memory: 41kB
+                           ->  Hash Join  (cost=6.50..15.73 rows=150 width=13) (actual time=0.210..0.701 rows=300 loops=1)
+                                 Hash Cond: (flights.to_city_id = cities.id)
+                                 ->  Hash Join  (cost=3.25..12.07 rows=150 width=4) (actual time=0.115..0.445 rows=300 loops=1)
+                                       Hash Cond: (tickets.flight_id = flights.id)
+                                       ->  Append  (cost=0.00..8.01 rows=301 width=4) (actual time=0.018..0.196 rows=300 loops=1)
+                                             ->  Seq Scan on tickets tickets_1  (cost=0.00..0.00 rows=1 width=4) (actual time=0.002..0.002 rows=0 loops=1)
+                                                   Filter: ((departure_date >= '2022-10-01'::date) AND (departure_date <= '2022-10-31'::date))
+                                             ->  Seq Scan on tickets_y2022_m10 tickets_2  (cost=0.00..6.50 rows=300 width=4) (actual time=0.015..0.145 rows=300 loops=1)
+                                                   Filter: ((departure_date >= '2022-10-01'::date) AND (departure_date <= '2022-10-31'::date))
+                                       ->  Hash  (cost=2.00..2.00 rows=100 width=8) (actual time=0.081..0.082 rows=100 loops=1)
+                                             Buckets: 1024  Batches: 1  Memory Usage: 12kB
+                                             ->  Seq Scan on flights  (cost=0.00..2.00 rows=100 width=8) (actual time=0.013..0.042 rows=100 loops=1)
+                                 ->  Hash  (cost=2.00..2.00 rows=100 width=13) (actual time=0.081..0.081 rows=100 loops=1)
+                                       Buckets: 1024  Batches: 1  Memory Usage: 13kB
+                                       ->  Seq Scan on cities  (cost=0.00..2.00 rows=100 width=13) (actual time=0.010..0.038 rows=100 loops=1)
+ Planning Time: 1.566 ms
+ Execution Time: 1.928 ms
+(28 rows)
+
+/*Создал индексы на столбцы условия объединения ON и сортировки ORDER BY
+CREATE INDEX cities_city_name_idx ON cities (city_name);
+CREATE INDEX flights_to_city_id_fk ON flights (to_city_id);
+CREATE INDEX tickets_flight_id_fk ON tickets (flight_id);
+
+                                                                             QUERY PLAN                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=27.56..27.59 rows=10 width=21) (actual time=0.895..0.899 rows=10 loops=1)
+   ->  Sort  (cost=27.56..27.80 rows=96 width=21) (actual time=0.895..0.897 rows=10 loops=1)
+         Sort Key: (count(*) OVER (?)) DESC, cities.city_name
+         Sort Method: top-N heapsort  Memory: 26kB
+         ->  HashAggregate  (cost=24.53..25.49 rows=96 width=21) (actual time=0.845..0.872 rows=61 loops=1)
+               Group Key: count(*) OVER (?), cities.city_name
+               Batches: 1  Memory Usage: 24kB
+               ->  WindowAgg  (cost=21.15..23.78 rows=150 width=21) (actual time=0.506..0.731 rows=300 loops=1)
+                     ->  Sort  (cost=21.15..21.53 rows=150 width=13) (actual time=0.499..0.520 rows=300 loops=1)
+                           Sort Key: flights.to_city_id
+                           Sort Method: quicksort  Memory: 41kB
+                           ->  Hash Join  (cost=6.50..15.73 rows=150 width=13) (actual time=0.109..0.417 rows=300 loops=1)
+                                 Hash Cond: (flights.to_city_id = cities.id)
+                                 ->  Hash Join  (cost=3.25..12.07 rows=150 width=4) (actual time=0.059..0.270 rows=300 loops=1)
+                                       Hash Cond: (tickets.flight_id = flights.id)
+                                       ->  Append  (cost=0.00..8.01 rows=301 width=4) (actual time=0.007..0.126 rows=300 loops=1)
+                                             ->  Seq Scan on tickets tickets_1  (cost=0.00..0.00 rows=1 width=4) (actual time=0.001..0.001 rows=0 loops=1)
+                                                   Filter: ((departure_date >= '2022-10-01'::date) AND (departure_date <= '2022-10-31'::date))
+                                             ->  Seq Scan on tickets_y2022_m10 tickets_2  (cost=0.00..6.50 rows=300 width=4) (actual time=0.006..0.096 rows=300 loops=1)
+                                                   Filter: ((departure_date >= '2022-10-01'::date) AND (departure_date <= '2022-10-31'::date))
+                                       ->  Hash  (cost=2.00..2.00 rows=100 width=8) (actual time=0.044..0.044 rows=100 loops=1)
+                                             Buckets: 1024  Batches: 1  Memory Usage: 12kB
+                                             ->  Seq Scan on flights  (cost=0.00..2.00 rows=100 width=8) (actual time=0.004..0.021 rows=100 loops=1)
+                                 ->  Hash  (cost=2.00..2.00 rows=100 width=13) (actual time=0.047..0.048 rows=100 loops=1)
+                                       Buckets: 1024  Batches: 1  Memory Usage: 13kB
+                                       ->  Seq Scan on cities  (cost=0.00..2.00 rows=100 width=13) (actual time=0.006..0.023 rows=100 loops=1)
+ Planning Time: 0.608 ms
+ Execution Time: 0.949 ms
+(28 rows)
