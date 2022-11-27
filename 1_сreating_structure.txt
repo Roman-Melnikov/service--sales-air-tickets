@@ -123,5 +123,6 @@ CREATE TABLE airlines_airports (
 CREATE TABLE aircrafts_flights (
 	aircraft_id INT,
 	flight_id INT,
+	departure_date DATE,
 	PRIMARY KEY (aircraft_id, flight_id)
 );
